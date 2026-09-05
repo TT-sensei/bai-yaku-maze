@@ -1,0 +1,44 @@
+name: fix-logic2
+on:
+  push:
+    branches: [main]
+jobs:
+  fix:
+    if: github.actor == 'TT-sensei'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix choices alignment
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          pattern=r"function choices\(\)\{.*?\n\}"
+          new="""function choices(){
+  const dirs=['U','R','D','L'],correctDir=state.route[state.step+1].dir;
+  const correctIndex=dirs.indexOf(correctDir);
+  const used=new Set(),vals=Array(4);
+  const correct=getCorrectValue();
+  vals[correctIndex]=correct;used.add(correct);
+  for(let i=0;i<4;i++){if(i===correctIndex)continue;const d=getDistractor(used);used.add(d);vals[i]=d}
+  state.sceneCorrect=correct;
+  return dirs.map((dir,i)=>({dir,value:vals[i],ok:i===correctIndex}));
+}"""
+          ns,count=re.subn(pattern,new,s,count=1,flags=re.S)
+          if count!=1: raise SystemExit(f'choices block match count={count}')
+          p.write_text(ns,encoding='utf-8')
+          PY
+      - name: Commit fix and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Align correct answer with route direction"
+          git push
+          git rm .github/workflows/fix-logic2.yml
+          git commit -m "Remove one-time alignment workflow"
+          git push
