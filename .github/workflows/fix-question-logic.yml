@@ -1,0 +1,110 @@
+name: Fix question logic
+on:
+  push:
+    branches: [main]
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch question logic
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+
+          old="""function choices(){
+  const dirs=['U','R','D','L'],correctDir=state.route[state.step+1].dir;
+  const correctIndex=dirs.indexOf(correctDir);
+  const used=new Set(),vals=Array(4);
+  const correct=getCorrectValue();
+  vals[correctIndex]=correct;used.add(correct);
+  for(let i=0;i<4;i++){
+    if(i===correctIndex)continue;
+    const d=getDistractor(used);used.add(d);vals[i]=d;
+  }
+  state.sceneCorrect=correct;
+  return dirs.map((dir,i)=>({dir,value:vals[i],ok:i===correctIndex}));
+}"""
+          new="""function choices(){
+  const dirs=['U','R','D','L'];
+  const used=new Set(),vals=Array(4);
+  const correct=getCorrectValue();
+  const correctIndex=rnd(0,3);
+  vals[correctIndex]=correct;used.add(correct);
+  for(let i=0;i<4;i++){
+    if(i===correctIndex)continue;
+    const d=getDistractor(used);used.add(d);vals[i]=d;
+  }
+  state.sceneCorrect=correct;
+  return dirs.map((dir,i)=>({dir,value:vals[i],ok:i===correctIndex}));
+}"""
+          if old not in s: raise SystemExit('choices block not found')
+          s=s.replace(old,new,1)
+
+          old="""function newQuestion(){
+  state.target=TARGETS[state.mode][rnd(0,TARGETS[state.mode].length-1)];
+  $('question').textContent=state.target+' の'+(state.mode==='multiple'?'倍数':'約数')+'をさがそう';
+"""
+          new="""function chooseTarget(){
+  const pool=TARGETS[state.mode];
+  let next=pool[rnd(0,pool.length-1)];
+  while(pool.length>1 && next===state.target) next=pool[rnd(0,pool.length-1)];
+  state.target=next;
+}
+function newQuestion(){
+  $('question').textContent=state.target+' の'+(state.mode==='multiple'?'倍数':'約数')+'をさがそう';
+"""
+          if old not in s: raise SystemExit('newQuestion block not found')
+          s=s.replace(old,new,1)
+
+          old="""  state.sceneCorrect=null;
+  state.target=TARGETS[state.mode][0];
+"""
+          new="""  state.sceneCorrect=null;
+  state.target=null;
+  chooseTarget();
+"""
+          if old not in s: raise SystemExit('start target block not found')
+          s=s.replace(old,new,1)
+
+          old="""    state.correct++;
+    state.step++;
+    if(state.step>=12){finish();return}
+    render()
+"""
+          new="""    state.correct++;
+    state.step++;
+    if(state.step>=12){finish();return}
+    if(state.step%4===0) chooseTarget();
+    render()
+"""
+          if old not in s: raise SystemExit('correct handler block not found')
+          s=s.replace(old,new,1)
+
+          s=s.replace("数字を見て、正しい道を選ぼう。","数字を見て、正しい数字を選ぼう。",1)
+          s=s.replace('aria-label="上の道"','aria-label="上の数字"',1)
+          s=s.replace('aria-label="右の道"','aria-label="右の数字"',1)
+          s=s.replace('aria-label="下の道"','aria-label="下の数字"',1)
+          s=s.replace('aria-label="左の道"','aria-label="左の数字"',1)
+
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit patched index
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "fix target persistence and answer placement"
+          git push
+      - name: Remove temporary workflow
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .github/workflows/fix-question-logic.yml || true
+          git commit -m "remove temporary fix workflow" || true
+          git push || true
