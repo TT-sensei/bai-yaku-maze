@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f3fbf7">
+  <title>倍数・約数迷路 | TT-sensei</title>
+  <meta name="description" content="倍数や約数を見つけながら、ナビキャラクターと迷路を進む算数ミニゲーム。">
+  <style>
+    :root{
+      --bg:#f3fbf7; --panel:#ffffff; --ink:#18332a; --muted:#668177; --line:#d9ebe3;
+      --accent:#37a879; --accent-dark:#287f5c; --accent-soft:#e2f5ec; --gold:#f6bf4d;
+      --shadow:0 10px 30px rgba(24,51,42,.08); --radius:24px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",Meiryo,sans-serif;color:var(--ink);background:linear-gradient(180deg,#f8fdfb 0%,var(--bg) 100%)}
+    body{min-height:100dvh}
+    button{font:inherit}
+    .app{width:min(1180px,100%);margin:0 auto;padding:clamp(12px,2vw,24px);min-height:100dvh}
+    .topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.02em}
+    .brand-mark{width:42px;height:42px;border-radius:14px;background:var(--accent-soft);display:grid;place-items:center;font-size:22px;border:2px solid #cce8db}
+    .top-actions{display:flex;gap:8px;align-items:center}
+    .ghost{border:2px solid var(--line);background:#fff;color:var(--ink);padding:9px 13px;border-radius:14px;font-weight:800;cursor:pointer}
+    .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:stretch;margin-bottom:18px}
+    .panel{background:rgba(255,255,255,.92);border:2px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .intro{padding:clamp(20px,4vw,42px);display:flex;flex-direction:column;justify-content:center}
+    .eyebrow{display:inline-flex;align-self:flex-start;padding:7px 11px;border-radius:999px;background:var(--accent-soft);color:var(--accent-dark);font-weight:900;font-size:13px;margin-bottom:12px}
+    h1{font-size:clamp(30px,5vw,54px);line-height:1.08;margin:0 0 12px;letter-spacing:-.03em}
+    .lead{font-size:clamp(15px,2vw,18px);line-height:1.75;color:var(--muted);margin:0 0 22px}
+    .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .mode-card{appearance:none;border:2px solid var(--line);background:#fff;border-radius:20px;padding:18px;text-align:left;cursor:pointer;transition:.16s transform,.16s border-color,.16s box-shadow}
+    .mode-card:hover{transform:translateY(-2px);border-color:#a8d8c3;box-shadow:0 8px 18px rgba(24,51,42,.08)}
+    .mode-card strong{display:block;font-size:20px;margin-bottom:6px}.mode-card span{color:var(--muted);font-size:13px}
+    .hero-art{min-height:300px;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 20%,#fff 0 22%,transparent 22%),linear-gradient(160deg,#eaf8f1,#fff)}
+    .hero-art::before,.hero-art::after{content:"";position:absolute;border-radius:50%;background:#d5f0e2;filter:blur(1px)}
+    .hero-art::before{width:190px;height:190px;left:-55px;bottom:-45px}.hero-art::after{width:145px;height:145px;right:-35px;top:-30px}
+    .hero-navi{position:absolute;inset:12px;display:grid;place-items:center;z-index:1}.hero-navi img{height:min(285px,82%);max-width:72%;object-fit:contain;filter:drop-shadow(0 16px 14px rgba(24,51,42,.12))}
+    .bubble{position:absolute;right:22px;top:22px;background:#fff;border:2px solid var(--line);border-radius:18px;padding:11px 13px;font-weight:900;z-index:2;box-shadow:0 8px 20px rgba(24,51,42,.08)}
+    .screen{padding:clamp(12px,2vw,20px)}
+    .game-header{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;padding:8px 4px 16px}
+    .goal-copy .label{font-size:13px;color:var(--muted);font-weight:800}.goal-copy .question{font-size:clamp(22px,3vw,34px);font-weight:950;letter-spacing:-.02em}
+    .progress-wrap{text-align:center}.progress-label{font-size:13px;color:var(--muted);font-weight:800}.progress{margin-top:5px;height:12px;width:min(280px,32vw);background:#eaf2ee;border-radius:999px;overflow:hidden;border:1px solid #deebe5}.progress>span{display:block;height:100%;width:0;background:linear-gradient(90deg,#6dca9d,var(--accent));border-radius:999px;transition:width .22s ease}
+    .status{text-align:right}.status strong{display:block;font-size:20px}.status span{font-size:12px;color:var(--muted)}
+    .maze{display:grid;grid-template-columns:1fr minmax(320px,520px) 1fr;grid-template-rows:minmax(120px,1fr) minmax(220px,1fr) minmax(120px,1fr);gap:14px;min-height:560px;align-items:center;justify-items:center;padding:clamp(8px,2vw,18px);background:linear-gradient(180deg,#fbfffd,#f0faf5);border:2px solid #e1efe8;border-radius:28px;overflow:hidden}
+    .choice{width:min(100%,190px);aspect-ratio:1/1;border:3px solid #bddacc;background:#fff;border-radius:25px;box-shadow:0 10px 18px rgba(24,51,42,.07);font-size:clamp(34px,5vw,58px);font-weight:950;color:var(--ink);cursor:pointer;transition:.14s transform,.14s box-shadow,.14s border-color;background}
+    .choice:hover{transform:translateY(-3px);border-color:#8dc9ab;box-shadow:0 14px 22px rgba(24,51,42,.1)}.choice:active{transform:scale(.96)}.choice:disabled{cursor:default;opacity:.58}
+    .choice.up{grid-column:2;grid-row:1}.choice.left{grid-column:1;grid-row:2}.choice.right{grid-column:3;grid-row:2}.choice.down{grid-column:2;grid-row:3}
+    .choice.empty{visibility:hidden;pointer-events:none}
+    .center{grid-column:2;grid-row:2;width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative;min-width:0}
+    .navi-stage{width:min(245px,78%);height:min(315px,92%);position:relative;display:grid;place-items:end center}
+    .navi-stage::after{content:"";position:absolute;left:10%;right:10%;bottom:3%;height:22px;border-radius:50%;background:rgba(24,51,42,.12);filter:blur(5px)}
+    .navi-stage img{position:relative;z-index:2;max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 12px 12px rgba(24,51,42,.12));transition:transform .22s ease}
+    .move-up img{transform:translateY(-10px)}.move-down img{transform:translateY(10px)}.move-left img{transform:translateX(-10px)}.move-right img{transform:translateX(10px)}
+    .mode-chip{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;white-space:nowrap;background:#fff;border:2px solid var(--line);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:900;color:var(--accent-dark);box-shadow:0 6px 14px rgba(24,51,42,.08)}
+    .bottom-row{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 4px 0}.hint{font-size:13px;color:var(--muted);font-weight:700}.secondary{border:2px solid var(--line);background:#fff;padding:10px 13px;border-radius:14px;font-weight:900;cursor:pointer}
+    .hidden{display:none!important}
+    .result{padding:clamp(22px,4vw,42px);text-align:center}.result-badge{width:110px;height:110px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;background:#fff8de;border:4px solid #f3cf70;font-size:48px;box-shadow:0 12px 24px rgba(246,191,77,.2)}
+    .result h2{font-size:clamp(30px,5vw,48px);margin:0 0 8px}.result p{color:var(--muted);font-weight:700}.stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:22px 0}.stat{min-width:130px;border:2px solid var(--line);border-radius:18px;padding:13px 16px;background:#fbfffd}.stat strong{display:block;font-size:24px}.stat span{font-size:12px;color:var(--muted);font-weight:800}.result-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.primary{border:0;background:var(--accent);color:#fff;padding:13px 18px;border-radius:15px;font-weight:950;cursor:pointer;box-shadow:0 8px 18px rgba(55,168,121,.24)}.primary:hover{background:var(--accent-dark)}
+    .badge-note{margin:18px auto 0;padding:12px 16px;background:var(--accent-soft);border:2px solid #cbe8d9;border-radius:18px;max-width:600px;font-weight:900}.badge-note span{color:var(--accent-dark)}
+    .celebrate{animation:celebrate .6s ease}.wrong{animation:shake .26s ease}.flash{box-shadow:0 0 0 6px rgba(55,168,121,.16),0 14px 30px rgba(55,168,121,.14)!important;border-color:#67be93!important}
+    @keyframes celebrate{0%{transform:scale(.96)}45%{transform:scale(1.05)}100%{transform:scale(1)}}
+    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+    @media(max-width:850px){.hero{grid-template-columns:1fr}.hero-art{min-height:245px}.game-header{grid-template-columns:1fr auto}.progress-wrap{grid-column:1/-1;grid-row:2}.progress{width:min(420px,70vw);margin-left:auto;margin-right:auto}.status{display:none}.maze{grid-template-columns:minmax(88px,1fr) minmax(180px,300px) minmax(88px,1fr);min-height:500px;grid-template-rows:minmax(95px,1fr) minmax(170px,1fr) minmax(95px,1fr);gap:10px}.choice{border-radius:20px}.navi-stage{height:260px}.mode-chip{font-size:11px}}
+    @media(max-width:560px){.app{padding:10px}.topbar{margin-bottom:10px}.brand-mark{width:38px;height:38px}.mode-grid{grid-template-columns:1fr}.hero-art{min-height:210px}.hero-navi img{height:185px}.screen{padding:8px}.maze{min-height:430px;grid-template-columns:74px minmax(100px,1fr) 74px;grid-template-rows:82px minmax(150px,1fr) 82px;border-radius:22px;gap:7px}.choice{width:70px;border-width:2px;font-size:32px;border-radius:17px}.navi-stage{height:205px;width:100%}.choice.up,.choice.down{justify-self:center}.choice.left,.choice.right{justify-self:center}.bottom-row{align-items:flex-start;flex-direction:column}.bottom-row .secondary{align-self:stretch}.bubble{font-size:12px;right:10px;top:10px}.goal-copy .question{font-size:23px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark">∮</div><span>倍数・約数迷路</span></div>
+      <div class="top-actions"><button class="ghost" id="homeBtn">ホーム</button></div>
+    </header>
+
+    <section id="homeScreen">
+      <div class="hero">
+        <div class="panel intro">
+          <span class="eyebrow">小学4〜5年生向け　算数ミニゲーム</span>
+          <h1>数字を見て、<br>道をえらぼう。</h1>
+          <p class="lead">お題に合う数字を見つけたら、その方向へ一歩。<br>ナビキャラクターといっしょにゴールを目指そう！</p>
+          <div class="mode-grid">
+            <button class="mode-card" data-mode="multiple"><strong>倍数を進もう</strong><span>「6の倍数」などを見つける</span></button>
+            <button class="mode-card" data-mode="divisor"><strong>約数を進もう</strong><span>「12の約数」などを見つける</span></button>
+          </div>
+        </div>
+        <div class="panel hero-art">
+          <div class="bubble">どっちへ進む？</div>
+          <div class="hero-navi"><img id="heroNavi" alt="ナビキャラクター"></div>
+        </div>
+      </div>
+      <div class="panel" style="padding:18px 20px;color:var(--muted);font-size:13px;line-height:1.7;font-weight:700">正解の数字は複数あることもあります。自分で道をえらんで進もう。間違えてもゲームオーバーにはなりません。</div>
+    </section>
+
+    <section id="gameScreen" class="panel screen hidden" aria-live="polite">
+      <div class="game-header">
+        <div class="goal-copy"><div class="label">今回のお題</div><div class="question" id="questionText"></div></div>
+        <div class="progress-wrap"><div class="progress-label" id="progressText">ゴールまで あと10</div><div class="progress"><span id="progressBar"></span></div></div>
+        <div class="status"><strong id="characterName"></strong><span id="stageText">ステージ 1</span></div>
+      </div>
+
+      <div class="maze" id="maze">
+        <button class="choice up" data-direction="up" aria-label="上へ"></button>
+        <button class="choice left" data-direction="left" aria-label="左へ"></button>
+        <div class="center">
+          <div class="mode-chip" id="modeChip"></div>
+          <div class="navi-stage" id="naviStage"><img id="navi" alt="ナビキャラクター"></div>
+        </div>
+        <button class="choice right" data-direction="right" aria-label="右へ"></button>
+        <button class="choice down" data-direction="down" aria-label="下へ"></button>
+      </div>
+      <div class="bottom-row"><div class="hint" id="feedback">お題に合う数字をタップしよう。</div><button class="secondary" id="quitBtn">ゲームをやめる</button></div>
+    </section>
+
+    <section id="resultScreen" class="panel result hidden">
+      <div class="result-badge">🎉</div>
+      <h2>クリア！</h2>
+      <p id="resultMessage"></p>
+      <div class="stats">
+        <div class="stat"><strong id="correctCount">0</strong><span>正解</span></div>
+        <div class="stat"><strong id="wrongCount">0</strong><span>まちがい</span></div>
+        <div class="stat"><strong id="timeCount">0秒</strong><span>クリアタイム</span></div>
+      </div>
+      <div class="badge-note" id="badgeNote"></div>
+      <div class="result-actions"><button class="primary" id="againBtn">もう一度</button><button class="secondary" id="resultHomeBtn">ホームへ</button></div>
+    </section>
+  </main>
+
+  <script>
+    const NAVI_BASE='https://tt-sensei.github.io/navi-character-/assets/characters';
+    const CHARACTERS=[
+      {id:'riku',name:'りく'}, {id:'sora',name:'そら'}, {id:'kai',name:'かい'},
+      {id:'saku',name:'さく'}, {id:'tsuki',name:'つき'}, {id:'nami',name:'なみ'}
+    ];
+    const CONFIG={
+      multiple:{label:'倍数',templates:[2,3,4,5,6,7,8,9,10],ranges:{easy:[2,5],normal:[3,9],hard:[4,10]}},
+      divisor:{label:'約数',templates:[6,8,10,12,15,18,20,24,30],ranges:{easy:[0,2],normal:[2,6],hard:[4,8]}}
+    };
+    const state={mode:'multiple',target:6,stepsTotal:10,stepsLeft:10,correct:0,wrong:0,start:0,char:CHARACTERS[0],difficulty:'normal',lastDirections:{},pending:false};
+
+    const $=s=>document.querySelector(s); const $$=s=>[...document.querySelectorAll(s)];
+    const screens={home:$('#homeScreen'),game:$('#gameScreen'),result:$('#resultScreen')};
+    const multiple=n=>n>0 && n%state.target===0;
+    const divisor=n=>state.target%n===0;
+    const isCorrect=n=>state.mode==='multiple'?multiple(n):divisor(n);
+
+    function naviUrl(id,pose){return `${NAVI_BASE}/${id}/fullbody/${pose}.png`}
+    function setNavi(pose='waving'){
+      $('#navi').src=naviUrl(state.char.id,pose); $('#heroNavi').src=naviUrl(state.char.id,'waving');
+      $('#navi').onerror=()=>{$('#navi').src=naviUrl(state.char.id,'waving')}; $('#heroNavi').onerror=()=>{$('#heroNavi').src=naviUrl(state.char.id,'waving')};
+    }
+    setNavi();
+
+    function showScreen(name){Object.values(screens).forEach(el=>el.classList.add('hidden'));screens[name].classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'})}
+    function chooseDifficulty(){
+      state.difficulty='normal';
+      // Prototypeは判断の核を優先し、ターゲットは中くらいの範囲から自動決定。
+      if(state.mode==='multiple') state.target=[3,4,6,7,8,9][Math.floor(Math.random()*6)];
+      else state.target=[12,15,18,20,24][Math.floor(Math.random()*5)];
+    }
+    function validCandidatePool(){
+      if(state.mode==='multiple'){
+        const pool=new Set();
+        for(let i=1;i<=12;i++) pool.add(state.target*i);
+        for(let i=0;i<10;i++) pool.add(state.target*i+[-5,-3,-2,-1,1,2,3,4,5][Math.floor(Math.random()*9)]);
+        for(let i=0;i<16;i++) pool.add(2+Math.floor(Math.random()*48));
+        return [...pool].filter(n=>n>=1 && n<=80);
+      }
+      const pool=new Set([1,state.target]);
+      for(let i=1;i<=state.target;i++) if(state.target%i===0) pool.add(i);
+      for(let i=0;i<18;i++) pool.add(2+Math.floor(Math.random()*state.target));
+      return [...pool].filter(n=>n>=1 && n<=state.target+8);
+    }
+    function pickNumbers(){
+      const pool=validCandidatePool(); let corrects=pool.filter(isCorrect); let wrongs=pool.filter(n=>!isCorrect(n));
+      // 正解を最低1つ保証。複数正解も積極的に残す。
+      const nums=[]; nums.push(corrects[Math.floor(Math.random()*corrects.length)]);
+      const remaining=pool.filter(n=>n!==nums[0]);
+      // 約半分程度は正解になりうるが、画面では最大4方向。
+      if(Math.random()<.38 && corrects.length>1){const second=corrects.find(n=>n!==nums[0]);if(second!=null) nums.push(second)}
+      while(nums.length<4){const candidates=remaining.filter(n=>!nums.includes(n)); if(!candidates.length) break; nums.push(candidates[Math.floor(Math.random()*candidates.length)])}
+      nums.sort(()=>Math.random()-.5); return nums;
+    }
+    function renderChoices(){
+      const nums=pickNumbers(); const dirs=['up','right','down','left']; const buttons={}; dirs.forEach(d=>buttons[d]=$(`.choice.${d}`));
+      dirs.forEach((d,i)=>{const b=buttons[d];b.disabled=false;b.classList.remove('empty','flash','wrong');b.textContent=nums[i]??'';b.dataset.value=nums[i]??'';});
+      // 端の見た目を少し変えるために、ときどき4方向すべて使わない。
+      if(Math.random()<.15){const drop=dirs[Math.floor(Math.random()*4)];const b=buttons[drop];b.classList.add('empty');b.disabled=true}
+      state.pending=false;
+    }
+    function updateProgress(){
+      $('#progressText').textContent=`ゴールまで あと${state.stepsLeft}`; $('#progressBar').style.width=`${((state.stepsTotal-state.stepsLeft)/state.stepsTotal)*100}%`;
+    }
+    function startGame(mode){
+      state.mode=mode; chooseDifficulty(); state.stepsTotal=10;state.stepsLeft=10;state.correct=0;state.wrong=0;state.start=performance.now();state.char=CHARACTERS[Math.floor(Math.random()*CHARACTERS.length)];
+      $('#questionText').textContent=`${state.target}の${CONFIG[mode].label}を進もう！`; $('#characterName').textContent=state.char.name; $('#stageText').textContent='ステージ 1'; $('#modeChip').textContent=CONFIG[mode].label;
+      setNavi('waving'); updateProgress(); $('#feedback').textContent='お題に合う数字をタップしよう。'; showScreen('game');renderChoices();
+    }
+    function handleChoice(btn){
+      if(state.pending||btn.disabled||btn.classList.contains('empty')) return;
+      const value=Number(btn.dataset.value); const direction=btn.dataset.direction; state.pending=true;
+      if(isCorrect(value)){
+        state.correct++; state.stepsLeft--; updateProgress(); $('#feedback').textContent=`${value}は${state.target}の${CONFIG[state.mode].label}！ 進もう！`;
+        btn.classList.add('flash'); $('#naviStage').className='navi-stage'; $('#naviStage').classList.add(`move-${direction}`); setNavi(state.stepsLeft===0?'complete':'correct');
+        $('#naviStage').classList.remove('celebrate'); void $('#naviStage').offsetWidth; $('#naviStage').classList.add('celebrate');
+        setTimeout(()=>{
+          $('#naviStage').className='navi-stage';
+          if(state.stepsLeft<=0){finishGame();return}
+          renderChoices();
+        },260);
+      }else{
+        state.wrong++; $('#feedback').textContent='ここは進めないよ。別の数字を見てみよう。'; btn.classList.add('wrong'); setNavi('retry'); setTimeout(()=>{btn.classList.remove('wrong');state.pending=false;},290);
+      }
+    }
+    function badgeKey(){return `bai-yaku-maze:${state.mode}:clear`}
+    function finishGame(){
+      const seconds=Math.max(1,Math.round((performance.now()-state.start)/100)/10); $('#correctCount').textContent=state.correct;$('#wrongCount').textContent=state.wrong;$('#timeCount').textContent=`${seconds}秒`;
+      $('#resultMessage').textContent=`${state.target}の${CONFIG[state.mode].label}を${state.correct}回見つけた！`;
+      const key=badgeKey(); const first=!localStorage.getItem(key); if(first)localStorage.setItem(key,'1');
+      $('#badgeNote').innerHTML=first?`🏅 <span>${state.mode==='multiple'?'倍数迷路 はじめてクリア':'約数迷路 はじめてクリア'}</span> バッジをゲット！`:`🏅 クリアバッジ獲得ずみ！ つぎは自己ベストをねらおう。`;
+      showScreen('result');
+    }
+    function goHome(){showScreen('home');}
+
+    $$('.mode-card').forEach(b=>b.addEventListener('click',()=>startGame(b.dataset.mode)));
+    $$('.choice').forEach(b=>b.addEventListener('click',()=>handleChoice(b)));
+    $('#againBtn').addEventListener('click',()=>startGame(state.mode));$('#resultHomeBtn').addEventListener('click',goHome);$('#homeBtn').addEventListener('click',goHome);$('#quitBtn').addEventListener('click',goHome);
+    // キーボードでも4方向を選べる（タブレットでは画面タップが基本）。
+    window.addEventListener('keydown',e=>{const map={ArrowUp:'up',ArrowRight:'right',ArrowDown:'down',ArrowLeft:'left'};const d=map[e.key];if(d&& !screens.game.classList.contains('hidden')){$(`.choice.${d}`)?.click();}});
+  </script>
+</body>
+</html>
