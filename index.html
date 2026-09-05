@@ -28,10 +28,35 @@ const $=id=>document.getElementById(id), charPath=n=>NAVI+n+'/fullbody/complete.
 const state={mode:'multiple',char:'riku',step:0,correct:0,wrong:0,start:0,pausedAt:0,route:[],target:3,sound:true,area:0};
 let audioCtx;
 function beep(ok=true){if(!state.sound)return;try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=ok?660:180;o.type='sine';g.gain.value=.035;o.connect(g);g.connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.12);o.stop(audioCtx.currentTime+.13)}catch(e){}}
-function good(n){return state.mode==='multiple'?n%state.target===0:state.target%n===0}
+function good(n){if(!Number.isInteger(n)||n<=0)return false;return state.mode==='multiple'?n%state.target===0:state.target%n===0}
 function rnd(min,max){return Math.floor(Math.random()*(max-min+1))+min}
-function getDistractor(){let n;do{if(state.mode==='multiple')n=rnd(Math.max(2,state.target-2),Math.min(90,state.target*10+8));else n=rnd(2,state.target)}while(good(n)||n<=0);return n}
-function choices(){const dirs=['U','R','D','L'],correctDir=state.route[state.step+1].dir;let vals=[state.target*(rnd(1,Math.max(2,Math.floor(72/state.target)))),getDistractor(),getDistractor(),getDistractor()];let used=new Set();vals=vals.map(v=>{while(used.has(v)){v=getDistractor()}used.add(v);return v});for(let i=0;i<4;i++)if(dirs[i]===correctDir)state.sceneCorrect=vals[i];return dirs.map((d,i)=>({dir:d,value:vals[i],ok:d===correctDir||good(vals[i])&&d===correctDir})).sort(()=>Math.random()-.5)}
+function getCorrectValue(){
+  if(state.mode==='multiple'){
+    const maxMultiplier=Math.max(2,Math.floor(72/state.target));
+    return state.target*rnd(1,maxMultiplier);
+  }
+  const divs=[];for(let n=1;n<=state.target;n++)if(state.target%n===0)divs.push(n);
+  return divs[rnd(0,divs.length-1)];
+}
+function getDistractor(used){
+  let n;
+  do{
+    n=state.mode==='multiple'?rnd(2,72):rnd(2,Math.max(12,state.target+10));
+  }while(used.has(n)||good(n));
+  return n;
+}
+function choices(){
+  const dirs=['U','R','D','L'],correctDir=state.route[state.step+1].dir;
+  const used=new Set(), vals=[];
+  const correct=getCorrectValue();
+  used.add(correct); vals.push(correct);
+  while(vals.length<4){const d=getDistractor(used);used.add(d);vals.push(d)}
+  const items=dirs.map((d,i)=>({dir:d,value:vals[i],ok:d===correctDir}));
+  const correctIndex=dirs.indexOf(correctDir);
+  [items[0],items[correctIndex]]=[items[correctIndex],items[0]];
+  state.sceneCorrect=correct;
+  return items;
+}
 function makeRoute(){const pts=[[14,78],[25,66],[39,72],[52,58],[67,68],[78,55],[64,43],[48,48],[34,37],[46,24],[62,31],[76,20],[88,29]];const dirs=[];for(let i=0;i<pts.length-1;i++){const [x,y]=pts[i], [nx,ny]=pts[i+1];dirs.push(Math.abs(nx-x)>Math.abs(ny-y)?(nx>x?'R':'L'):(ny>y?'D':'U'))}return pts.map((p,i)=>({x:p[0],y:p[1],dir:dirs[i]||null}))}
 function areaForStep(){return state.step<4?0:state.step<8?1:2}
 function renderRoute(){const r=$('route');r.innerHTML='<svg viewBox="0 0 100 100" preserveAspectRatio="none"></svg><div id="nodes"></div>';const svg=r.querySelector('svg'),nodes=r.querySelector('#nodes');const pts=state.route.map(p=>p.x+','+p.y).join(' ');svg.innerHTML='<polyline class="routePath" points="'+pts+'"></polyline><polyline class="routePathDone" points="'+state.route.slice(0,state.step+1).map(p=>p.x+','+p.y).join(' ')+'"></polyline>';state.route.forEach((p,i)=>{const n=document.createElement('div');n.className='node '+(i<=state.step?'done ':'')+(i===state.step+1?'next ':'')+(i===state.route.length-1?'goal':'');n.style.left=p.x+'%';n.style.top=p.y+'%';nodes.appendChild(n)});const p=state.route[state.step];$('hero').style.left=p.x+'%';$('hero').style.top=p.y+'%'}
