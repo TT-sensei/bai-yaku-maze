@@ -17,28 +17,19 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
           p = Path('index.html')
           s = p.read_text()
-          old = '''.startart{display:grid;place-items:center;position:relative;min-height:480px}.portal{position:absolute;width:min(42vw,470px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#76e3ad55,#309d6c16 48%,transparent 70%);box-shadow:0 0 80px #50d69733}.navi{height:min(460px,62vh);max-width:88%;object-fit:contain;filter:drop-shadow(0 25px 20px #0006)}'''
-          new = '''.startart{display:grid;place-items:center;position:relative;min-height:380px;opacity:.96}.portal{position:absolute;width:min(34vw,360px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#76e3ad42,#309d6c12 48%,transparent 70%);box-shadow:0 0 60px #50d69722}.navi{height:min(330px,44vh);max-width:72%;object-fit:contain;filter:drop-shadow(0 18px 16px #0005)}'''
-          if old not in s: raise SystemExit('start art CSS not found')
-          s = s.replace(old, new)
-          old = '''.maze{position:relative;height:min(70vh,690px);min-height:520px;border-radius:23px;overflow:hidden;background:linear-gradient(145deg,#4b8b69,#244d3b)}'''
-          new = '''.maze{position:relative;height:min(70vh,690px);min-height:520px;border-radius:23px;overflow:hidden;background:linear-gradient(145deg,#4b8b69,#244d3b);box-shadow:inset 0 0 0 2px #ffffff18,inset 0 0 70px #071a1255}.maze:before{content:"";position:absolute;inset:0;z-index:0;opacity:.28;background:repeating-linear-gradient(0deg,transparent 0 38px,#d9f4e622 39px 41px),repeating-linear-gradient(90deg,transparent 0 38px,#d9f4e622 39px 41px);pointer-events:none}.maze:after{content:"";position:absolute;inset:3%;z-index:0;border:18px solid #163d2d22;border-radius:30px;box-shadow:inset 0 0 0 3px #ffffff16;pointer-events:none}'''
-          if old not in s: raise SystemExit('maze CSS not found')
-          s = s.replace(old, new)
-          old = '''.choice{position:absolute;width:min(18vw,220px);height:min(18vw,220px);min-width:130px;min-height:130px;border:4px solid #fff;background:#fffffff5;border-radius:25px;box-shadow:0 10px 0 #aacdbd,0 18px 28px #12382a2b;display:grid;place-items:center;z-index:8;color:var(--dark);font-size:clamp(38px,5vw,66px);font-weight:950;cursor:pointer}'''
-          new = '''.choice{position:absolute;width:min(14vw,170px);height:min(14vw,170px);min-width:108px;min-height:108px;border:4px solid #fff;background:#fffffff7;border-radius:22px;box-shadow:0 8px 0 #aacdbd,0 14px 24px #12382a2b;display:grid;place-items:center;z-index:8;color:var(--dark);font-size:clamp(30px,3.7vw,50px);font-weight:950;cursor:pointer}'''
-          if old not in s: raise SystemExit('choice CSS not found')
-          s = s.replace(old, new)
-          old = '''@media(max-width:900px){.startinner{grid-template-columns:1fr}.startart{min-height:300px;order:-1}.navi{height:290px}.head{grid-template-columns:1fr auto}.progress{grid-column:1/-1}.bar{width:min(520px,80vw);margin:auto}.status{display:none}.choice{width:29%;height:29%}}'''
-          new = '''@media(max-width:900px){.startinner{grid-template-columns:1fr}.startart{min-height:230px;order:-1}.navi{height:220px}.head{grid-template-columns:1fr auto}.progress{grid-column:1/-1}.bar{width:min(520px,80vw);margin:auto}.status{display:none}.choice{width:24%;height:24%;min-width:96px;min-height:96px;font-size:clamp(27px,4vw,43px)}}'''
-          if old not in s: raise SystemExit('900px media CSS not found')
-          s = s.replace(old, new)
-          old = '''@media(max-width:560px){.app{padding:7px}.startinner{padding:20px 16px}.start h1{font-size:49px}.startart{min-height:250px}.navi{height:235px}.speech{font-size:11px;max-width:170px}.modes{grid-template-columns:1fr}.maze{min-height:455px}.choice{width:74px;height:74px;min-width:74px;min-height:74px;border-width:3px;border-radius:17px;font-size:31px;box-shadow:0 5px 0 #aacdbd}.mini{width:145px}.reason{width:85%;font-size:12px}.bottom{flex-direction:column;align-items:stretch}.collectionGrid{grid-template-columns:1fr}}'''
-          new = '''@media(max-width:560px){.app{padding:7px}.startinner{padding:20px 16px}.start h1{font-size:49px}.startart{min-height:190px}.navi{height:180px}.speech{font-size:11px;max-width:170px}.modes{grid-template-columns:1fr}.maze{min-height:455px}.choice{width:68px;height:68px;min-width:68px;min-height:68px;border-width:3px;border-radius:16px;font-size:28px;box-shadow:0 5px 0 #aacdbd}.mini{width:145px}.reason{width:85%;font-size:12px}.bottom{flex-direction:column;align-items:stretch}.collectionGrid{grid-template-columns:1fr}}'''
-          if old not in s: raise SystemExit('560px media CSS not found')
-          s = s.replace(old, new)
+          s, n = re.subn(r'\.startart\{[^}]*\}\.portal\{[^}]*\}\.navi\{[^}]*\}', '.startart{display:grid;place-items:center;position:relative;min-height:380px;opacity:.96}.portal{position:absolute;width:min(34vw,360px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#76e3ad42,#309d6c12 48%,transparent 70%);box-shadow:0 0 60px #50d69722}.navi{height:min(330px,44vh);max-width:72%;object-fit:contain;filter:drop-shadow(0 18px 16px #0005)}', s, count=1)
+          if n != 1: raise SystemExit('start art CSS not found')
+          s, n = re.subn(r'\.maze\{position:relative;[^}]*background:linear-gradient\(145deg,#4b8b69,#244d3b\)\}', '.maze{position:relative;height:min(70vh,690px);min-height:520px;border-radius:23px;overflow:hidden;background:linear-gradient(145deg,#4b8b69,#244d3b);box-shadow:inset 0 0 0 2px #ffffff18,inset 0 0 70px #071a1255}.maze:before{content:"";position:absolute;inset:0;z-index:0;opacity:.28;background:repeating-linear-gradient(0deg,transparent 0 38px,#d9f4e622 39px 41px),repeating-linear-gradient(90deg,transparent 0 38px,#d9f4e622 39px 41px);pointer-events:none}.maze:after{content:"";position:absolute;inset:3%;z-index:0;border:18px solid #163d2d22;border-radius:30px;box-shadow:inset 0 0 0 3px #ffffff16;pointer-events:none}', s, count=1)
+          if n != 1: raise SystemExit('maze CSS not found')
+          s, n = re.subn(r'\.choice\{[^}]*font-size:clamp\(38px,5vw,66px\);font-weight:950;cursor:pointer\}', '.choice{position:absolute;width:min(14vw,170px);height:min(14vw,170px);min-width:108px;min-height:108px;border:4px solid #fff;background:#fffffff7;border-radius:22px;box-shadow:0 8px 0 #aacdbd,0 14px 24px #12382a2b;display:grid;place-items:center;z-index:8;color:var(--dark);font-size:clamp(30px,3.7vw,50px);font-weight:950;cursor:pointer}', s, count=1)
+          if n != 1: raise SystemExit('choice CSS not found')
+          s, n = re.subn(r'@media\(max-width:900px\)\{[^}]*\.startart\{min-height:300px;order:-1\}\.navi\{height:290px\}[^}]*\.choice\{width:29%;height:29%\}\}', '@media(max-width:900px){.startinner{grid-template-columns:1fr}.startart{min-height:230px;order:-1}.navi{height:220px}.head{grid-template-columns:1fr auto}.progress{grid-column:1/-1}.bar{width:min(520px,80vw);margin:auto}.status{display:none}.choice{width:24%;height:24%;min-width:96px;min-height:96px;font-size:clamp(27px,4vw,43px)}}', s, count=1)
+          if n != 1: raise SystemExit('900px media CSS not found')
+          s = s.replace('.startart{min-height:250px}.navi{height:235px}', '.startart{min-height:190px}.navi{height:180px}')
+          s = s.replace('.choice{width:74px;height:74px;min-width:74px;min-height:74px;border-width:3px;border-radius:17px;font-size:31px;', '.choice{width:68px;height:68px;min-width:68px;min-height:68px;border-width:3px;border-radius:16px;font-size:28px;')
           p.write_text(s)
           PY
       - name: Commit changes
@@ -49,4 +40,4 @@ jobs:
           git diff --cached --quiet || git commit -m 'Improve maze background and UI balance'
           git push
 
-# trigger
+# trigger v2
