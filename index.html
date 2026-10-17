@@ -106,7 +106,7 @@ function updateStatus(){
  $('nextLabel').textContent=state.solved?'最後まで順番につなげたよ！':(common?'A・Bの2つの道を、それぞれの数のきまりで進もう。':state.mode==='multiple'?'同じ数ずつ増える順番を考えよう。':'次に来る約数を、小さい順に考えよう。答えは表示しないよ。');
  const modeNames={multiple:'倍数',factor:'約数',commonMultiple:'公倍数',commonFactor:'公約数'};
  $('modeLabel').textContent=modeNames[state.mode]+'の迷路 · レベル'+(state.level+1);
- $('questionTitle').textContent=(state.mode==='commonMultiple'||state.mode==='commonFactor'?state.target+'と'+state.target2+'の':state.target+'の')+modeNames[state.mode]+'を小さい順にたどろう';
+ $('questionTitle').textContent=common?state.target+'と'+state.target2+'から出発し、共通する数で合流しよう':state.target+'の'+modeNames[state.mode]+'を小さい順にたどろう';
  $('boardInfo').textContent=levels[state.level].n+'×'+levels[state.level].n+' · 数の範囲 1〜'+Math.max(levels[state.level].range,Math.ceil(state.sequence[state.sequence.length-1]*1.12));
 }
 function tapCell(i){
