@@ -21,12 +21,12 @@
 <main class="app">
 <header class="top"><div class="brand"><div class="mark">↗</div><div>倍数・約数迷路<small>TT-sensei · 算数トレーニング</small></div></div><button class="quiet" id="homeTop">設定へ</button></header>
 <section id="setupScreen">
-<div class="panel intro"><div class="eyebrow">小学5年生向け · 数のきまり</div><h1>数字を順番にたどって、<br>ゴールをめざそう。</h1><p>となり合うマスへ一つずつ進みます。倍数・約数は順番をたどろう。公倍数・公約数は赤と青の2つのスタートから進み、紫のマスで道が重なるよ。出題される倍数・約数は毎回ランダム。ヒントに答えは出ないよ。</p></div>
+<div class="panel intro"><div class="eyebrow">小学5年生向け · 数のきまり</div><h1>数字を順番にたどって、<br>ゴールをめざそう。</h1><p>となり合うマスへ一つずつ進みます。倍数・約数は順番をたどろう。公倍数・公約数は赤と青の2つのスタートから進み、紫のマスで道が重なるよ。出題される倍数・約数は毎回ランダム。ガイドは考え方のヒントだよ。</p></div>
 <div class="setup">
 <section class="panel setupCard"><h2>① 迷路の種類を選ぼう</h2><div class="modeChoices" id="modeChoices"><button class="mode active" data-mode="multiple"><strong>倍数</strong><span>同じ数ずつ増える</span></button><button class="mode" data-mode="factor"><strong>約数</strong><span>小さい順につなぐ</span></button><button class="mode" data-mode="commonMultiple"><strong>公倍数</strong><span>2つの数に共通する倍数</span></button><button class="mode" data-mode="commonFactor"><strong>公約数</strong><span>2つの数に共通する約数</span></button></div><p class="levelInfo">選んだ種類の中で、もとになる数は毎回ランダムに決まります。</p></section>
 <section class="panel setupCard"><h2>② 難しさを選ぼう</h2><div class="difficulty"><button class="level active" data-level="0"><b>レベル1</b><small>やさしい</small></button><button class="level" data-level="1"><b>レベル2</b><small>ふつう</small></button><button class="level" data-level="2"><b>レベル3</b><small>むずかしい</small></button></div><p class="levelInfo" id="levelInfo">5×5マス · 倍数は5個をたどる · まずは順番を確認しよう。</p><div class="startRow"><button class="primary" id="startBtn">迷路をつくる　→</button><span class="startNote">問題は遊ぶたびに変わります。<br>正解ルートは自動でチェックされます。</span></div></section>
 </div>
-<div class="panel how"><div class="howItem"><div class="howIcon">1</div><div><b>スタートを見つける</b><span>赤いAと青いBがスタート。紫になったマスは、2つの道が重なったところだよ。</span></div></div><div class="howItem"><div class="howIcon">2</div><div><b>次の数を考える</b><span>順番に来る数を考えて、となりのマスをタップ。</span></div></div><div class="howItem"><div class="howIcon">3</div><div><b>ゴールをめざす</b><span>オレンジのマスがゴール。公倍数は3つ目の共通する倍数まで進もう。</span></div></div></div>
+<div class="panel how"><div class="howItem"><div class="howIcon">1</div><div><b>スタートを見つける</b><span>赤いAと青いBがスタート。紫になったマスは、2つの道が重なったところだよ。</span></div></div><div class="howItem"><div class="howIcon">2</div><div><b>次の数を考える</b><span>順番に来る数を考えて、となりのマスをタップ。</span></div></div><div class="howItem"><div class="howIcon">3</div><div><b>ゴールをめざす</b><span>オレンジのマスがゴール。数のきまりを使って、最後までつなごう。</span></div></div></div>
 </section>
 <section id="gameScreen" class="panel gamePanel hidden">
 <div class="gameHead"><div class="gameTitle"><small id="modeLabel">倍数の迷路 · レベル1</small><h2 id="questionTitle">2の倍数を順番にたどろう</h2></div><div class="gameMeta"><b id="moveCount">0 マス進んだ</b><span id="boardInfo">5×5 · 数の範囲 1〜30</span></div></div>
@@ -91,7 +91,13 @@ function renderBoard(){
   const seenA=common&&state.visitedA.includes(i),seenB=common&&state.visitedB.includes(i),wasVisited=common?(seenA||seenB):state.visited.includes(i);
   if(common){if(seenA&&seenB)b.classList.add('overlap');else if(seenA)b.classList.add('pathA');else if(seenB)b.classList.add('pathB');}else if(wasVisited)b.classList.add('visited');
   if(common){if(i===state.current)b.classList.add('currentA');if(i===state.current2)b.classList.add('currentB');}else if(i===state.current)b.classList.add('current');
-  const canTap=common?((state.progressA+1<state.route.length&&i===state.route[state.progressA+1])||(state.progressB+1<state.route2.length&&i===state.route2[state.progressB+1])):neighbors(state.current,n).includes(i);
+  const meetValue=common?(state.mode==='commonMultiple'?lcm(state.target,state.target2):gcd(state.target,state.target2)):null;
+  const meetA=common?state.sequence.indexOf(meetValue):-1,meetB=common?state.sequence2.indexOf(meetValue):-1;
+  const bothMet=common&&state.progressA>=meetA&&state.progressB>=meetB;
+  const canTap=common?(
+   (state.progressA+1<state.route.length&&i===state.route[state.progressA+1]&&(bothMet||state.progressA<meetA))||
+   (state.progressB+1<state.route2.length&&i===state.route2[state.progressB+1]&&(bothMet||state.progressB<meetB))
+  ):neighbors(state.current,n).includes(i);
   if(!state.solved&&canTap)b.classList.add('neighbor');
   if(wasVisited&&i!==state.current&&i!==state.current2){const trail=document.createElement('span');trail.className='trail';trail.textContent=common?(seenA&&seenB?'A+B':seenA?'A':'B'):'✓';b.appendChild(trail)}
   b.addEventListener('click',()=>tapCell(i));board.appendChild(b)
@@ -112,8 +118,21 @@ function updateStatus(){
 function tapCell(i){
  if(state.solved)return;
  const common=state.mode==='commonMultiple'||state.mode==='commonFactor',n=levels[state.level].n;
- if(common){let advanced=false;const nextA=state.route[state.progressA+1],nextB=state.route2[state.progressB+1];if(nextA===i){state.progressA++;state.current=i;state.visitedA.push(i);advanced=true}if(nextB===i){state.progressB++;state.current2=i;state.visitedB.push(i);advanced=true}if(!advanced){state.wrong++;setMessage('AかBのスタートから、次の数につながるマスを探そう。','bad');renderBoard();return}state.moves++;const doneA=state.progressA===state.route.length-1,doneB=state.progressB===state.route2.length-1;if(doneA&&doneB){state.solved=true;state.elapsed=Math.max(1,Math.round((Date.now()-state.startedAt)/1000));setMessage('2つの道がつながったよ！','good');renderBoard();setTimeout(showResult,180);return}setMessage('いいね！ AとB、それぞれの次の数を考えよう。','good');renderBoard();return}
- if(i===state.current){setMessage('今いるマスだよ。上下左右のとなりを見てみよう。');return}
+  if(common){
+   const meetValue=state.mode==='commonMultiple'?lcm(state.target,state.target2):gcd(state.target,state.target2);
+   const meetA=state.sequence.indexOf(meetValue),meetB=state.sequence2.indexOf(meetValue);
+   const bothMet=state.progressA>=meetA&&state.progressB>=meetB;
+   let advanced=false;
+   const nextA=state.route[state.progressA+1],nextB=state.route2[state.progressB+1];
+   if(nextA===i&&(bothMet||state.progressA<meetA)){state.progressA++;state.current=i;state.visitedA.push(i);advanced=true}
+   if(nextB===i&&(bothMet||state.progressB<meetB)){state.progressB++;state.current2=i;state.visitedB.push(i);advanced=true}
+   if(!advanced){state.wrong++;setMessage('まずAとBの道を、それぞれ合流するマスまで進めよう。','bad');renderBoard();return}
+   state.moves++;
+   const doneA=state.progressA===state.route.length-1,doneB=state.progressB===state.route2.length-1;
+   if(doneA&&doneB){state.solved=true;state.elapsed=Math.max(1,Math.round((Date.now()-state.startedAt)/1000));setMessage('2つの道がつながったよ！','good');renderBoard();setTimeout(showResult,180);return}
+   setMessage('いいね！ AとB、それぞれの数のきまりを考えよう。','good');renderBoard();return
+  }
+  if(i===state.current){setMessage('今いるマスだよ。上下左右のとなりを見てみよう。');return}
  if(!neighbors(state.current,n).includes(i)){setMessage('一度に進めるのは、上下左右のとなりのマスだけだよ。','bad');state.wrong++;return}
  const k=state.visited.length,expected=state.sequence[k];if(k>=state.sequence.length)return;
  if(state.grid[i]!==expected){state.wrong++;setMessage('次に来る数とちがうみたい。'+(state.mode==='multiple'?' '+state.target+'ずつ増える順番を考えよう。':'約数を小さい順に思い出そう。'),'bad');return}
