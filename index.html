@@ -21,10 +21,10 @@
 <main class="app">
 <header class="top"><div class="brand"><div class="mark">↗</div><div>倍数・約数迷路<small>TT-sensei · 算数トレーニング</small></div></div><button class="quiet" id="homeTop">設定へ</button></header>
 <section id="setupScreen">
-<div class="panel intro"><div class="eyebrow">小学5年生向け · 数のきまり</div><h1>数字を順番にたどって、<br>ゴールをめざそう。</h1><p>となり合うマスへ一つずつ進みます。倍数は小さい順、約数も小さい順。正しい数のつながりを考えながら、スタートからゴールまで進もう。</p></div>
+<div class="panel intro"><div class="eyebrow">小学5年生向け · 数のきまり</div><h1>数字を順番にたどって、<br>ゴールをめざそう。</h1><p>となり合うマスへ一つずつ進みます。倍数は小さい順、約数も小さい順。正しい数のつながりを考えながら、スタートからゴールまで進もう。出題される倍数・約数は毎回ランダム。ヒントに答えは出ないよ。</p></div>
 <div class="setup">
-<section class="panel setupCard"><h2>① どんな迷路にする？</h2><div class="modeChoices"><button class="mode active" data-mode="multiple"><strong>倍数の迷路</strong><span>2の倍数、3の倍数…</span></button><button class="mode" data-mode="factor"><strong>約数の迷路</strong><span>12の約数、18の約数…</span></button></div><label class="field" id="targetLabel">何の倍数？<select id="targetSelect"><option value="2">2の倍数</option><option value="3">3の倍数</option><option value="4">4の倍数</option><option value="5">5の倍数</option><option value="6">6の倍数</option><option value="7">7の倍数</option><option value="8">8の倍数</option><option value="9">9の倍数</option><option value="10">10の倍数</option><option value="12">12の倍数</option></select></label></section>
-<section class="panel setupCard"><h2>② 難しさを選ぼう</h2><div class="difficulty"><button class="level active" data-level="0"><b>レベル1</b><small>やさしい</small></button><button class="level" data-level="1"><b>レベル2</b><small>ふつう</small></button><button class="level" data-level="2"><b>レベル3</b><small>むずかしい</small></button><button class="level" data-level="3"><b>レベル4</b><small>達人</small></button></div><p class="levelInfo" id="levelInfo">5×5マス · 数の範囲 1〜30 · まずは順番を確認しよう。</p><div class="startRow"><button class="primary" id="startBtn">迷路をつくる　→</button><span class="startNote">問題は遊ぶたびに変わります。<br>正解ルートは自動でチェックされます。</span></div></section>
+<section class="panel setupCard"><h2>① 迷路は毎回ランダム</h2><div class="sideCard" style="background:#f7f9fd"><h3>出題はおまかせ</h3><p style="font-size:13px;line-height:1.7;color:var(--muted);margin:0">倍数・約数と、もとになる数は毎回ランダム。どちらが出るかは、迷路を作ってからのお楽しみ！</p></div></section>
+<section class="panel setupCard"><h2>① 難しさを選ぼう</h2><div class="difficulty"><button class="level active" data-level="0"><b>レベル1</b><small>やさしい</small></button><button class="level" data-level="1"><b>レベル2</b><small>ふつう</small></button><button class="level" data-level="2"><b>レベル3</b><small>むずかしい</small></button><button class="level" data-level="3"><b>レベル4</b><small>達人</small></button></div><p class="levelInfo" id="levelInfo">5×5マス · 数の範囲 1〜30 · まずは順番を確認しよう。</p><div class="startRow"><button class="primary" id="startBtn">迷路をつくる　→</button><span class="startNote">問題は遊ぶたびに変わります。<br>正解ルートは自動でチェックされます。</span></div></section>
 </div>
 <div class="panel how"><div class="howItem"><div class="howIcon">1</div><div><b>スタートを見つける</b><span>緑のマスがスタート。となり合うマスに進もう。</span></div></div><div class="howItem"><div class="howIcon">2</div><div><b>次の数を考える</b><span>順番に来る数を考えて、となりのマスをタップ。</span></div></div><div class="howItem"><div class="howIcon">3</div><div><b>ゴールをめざす</b><span>オレンジのマスがゴール。数字の順番をつないで進もう。</span></div></div></div>
 </section>
@@ -32,7 +32,7 @@
 <div class="gameHead"><div class="gameTitle"><small id="modeLabel">倍数の迷路 · レベル1</small><h2 id="questionTitle">2の倍数を順番にたどろう</h2></div><div class="gameMeta"><b id="moveCount">0 マス進んだ</b><span id="boardInfo">5×5 · 数の範囲 1〜30</span></div></div>
 <div class="progress"><span id="progressBar"></span></div>
 <div class="playArea"><div class="boardWrap"><div id="board" class="board" role="group" aria-label="数字の迷路"></div></div><aside class="side">
-<div class="sideCard"><h3>次に来る数</h3><div class="nextNumber" id="nextNumber">4</div><div class="nextLabel" id="nextLabel">2の倍数を小さい順にたどろう。</div></div>
+<div class="sideCard"><h3>次に来る数</h3><div class="nextNumber" id="nextNumber">＋？</div><div class="nextLabel" id="nextLabel">答えは表示しないよ。次の数を自分で考えよう。</div></div>
 <div class="sideCard"><h3>メッセージ</h3><div id="message" class="message" aria-live="polite">緑のスタートから始めよう。</div></div>
 <div class="sideButtons"><button id="undoBtn" class="secondary">一つ戻る</button><button id="restartBtn" class="secondary">この迷路をやり直す</button><button id="changeBtn" class="secondary">設定を変える</button></div>
 </aside></div>
@@ -91,8 +91,8 @@ function updateStatus(){
  const k=state.visited.length-1,seq=state.sequence,next=seq[Math.min(k+1,seq.length-1)];
  $('moveCount').textContent=k+' マス進んだ';
  $('progressBar').style.width=(k/(seq.length-1)*100)+'%';
- $('nextNumber').textContent=state.solved?'✓':(k+1<seq.length?seq[k+1]:'—');
- $('nextLabel').textContent=state.solved?'最後まで順番につなげたよ！':(state.mode==='multiple'?'今いる数に、'+state.target+'を足した数だよ。':'次の約数を小さい順に考えよう。');
+ $('nextNumber').textContent=state.solved?'✓':(state.mode==='multiple'?'＋'+state.target+'？':'約数は？');
+ $('nextLabel').textContent=state.solved?'最後まで順番につなげたよ！':(state.mode==='multiple'?'今の数に '+state.target+' を足すと？':'次に来る約数を、小さい順に考えよう。答えは表示しないよ。');
  $('modeLabel').textContent=(state.mode==='multiple'?'倍数の迷路':'約数の迷路')+' · レベル'+(state.level+1);
  $('questionTitle').textContent=state.mode==='multiple'?state.target+'の倍数を小さい順にたどろう':state.target+'の約数を小さい順にたどろう';
  $('boardInfo').textContent=levels[state.level].n+'×'+levels[state.level].n+' · 数の範囲 1〜'+levels[state.level].range;
@@ -103,7 +103,7 @@ function tapCell(i){
  if(i===state.current){setMessage('今いるマスだよ。上下左右のとなりを見てみよう。');return}
  if(!neighbors(state.current,n).includes(i)){setMessage('一度に進めるのは、上下左右のとなりのマスだけだよ。','bad');state.wrong++;return}
  const k=state.visited.length;
- if(k>=state.sequence.length-1){return}
+ if(k>=state.sequence.length){return}
  const expected=state.sequence[k];
  if(state.grid[i]!==expected){state.wrong++;setMessage('次に来る数とちがうみたい。'+(state.mode==='multiple'?' '+state.target+'ずつ増える順番を考えよう。':'約数を小さい順に思い出そう。'),'bad');return}
  state.current=i;state.visited.push(i);setMessage('正解！ 次の数を考えて進もう。','good');
@@ -113,7 +113,9 @@ function tapCell(i){
 }
 function undoStep(){if(state.solved)return;if(state.visited.length<=1){setMessage('スタートより前には戻れないよ。');return}state.visited.pop();state.current=state.visited[state.visited.length-1];setMessage('一つ前に戻ったよ。次の数を考えてみよう。');renderBoard()}
 function startGame(){
- state.target=Number($('targetSelect').value);state.level=Number(document.querySelector('.level.active').dataset.level);
+ state.mode=Math.random()<0.5?'multiple':'factor';
+ const targets=state.mode==='multiple'?[2,3,4,5,6,7,8,9,10,12]:[12,18,20,24,30,36,40,48,60,72];
+ state.target=targets[rand(targets.length)];state.level=Number(document.querySelector('.level.active').dataset.level);
  if(!createPuzzle()){setMessage('迷路を作れませんでした。もう一度ためしてね。','bad');return}
  state.current=state.start;state.visited=[state.start];state.wrong=0;state.moves=0;state.solved=false;state.startedAt=Date.now();state.elapsed=0;
  $('setupScreen').classList.add('hidden');$('gameScreen').classList.remove('hidden');$('resultOverlay').classList.add('hidden');
@@ -126,13 +128,7 @@ function showResult(){
 }
 function backToSetup(){$('resultOverlay').classList.add('hidden');$('gameScreen').classList.add('hidden');$('setupScreen').classList.remove('hidden');window.scrollTo({top:0,behavior:'instant'})}
 function updateLevelInfo(){const lev=Number(document.querySelector('.level.active').dataset.level),cfg=levels[lev];$('levelInfo').textContent=cfg.n+'×'+cfg.n+'マス · 数の範囲 1〜'+cfg.range+' · '+cfg.label}
-function updateTargetOptions(){
- const select=$('targetSelect');select.innerHTML='';
- const vals=state.mode==='multiple'?[2,3,4,5,6,7,8,9,10,12]:[12,18,20,24,30,36,40,48,60,72];
- vals.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=state.mode==='multiple'?v+'の倍数':v+'の約数';select.appendChild(o)});
- $('targetLabel').firstChild.textContent=state.mode==='multiple'?'何の倍数？':'何の約数？';
-}
-document.querySelectorAll('.mode').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.mode').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.mode=b.dataset.mode;updateTargetOptions()}));
+
 document.querySelectorAll('.level').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.level').forEach(x=>x.classList.remove('active'));b.classList.add('active');updateLevelInfo()}));
 $('startBtn').addEventListener('click',startGame);
 $('restartBtn').addEventListener('click',startGame);
