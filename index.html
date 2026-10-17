@@ -15,6 +15,7 @@
 @media(max-width:760px){.setup{grid-template-columns:1fr}.how{grid-template-columns:1fr;gap:12px}.playArea{grid-template-columns:minmax(0,1fr) 180px;gap:10px}.sideCard{padding:12px}.gameHead{align-items:flex-start}.cell{border-radius:6px}.board{gap:3px}}
 @media(max-width:520px){.app{padding:8px 8px 22px}.top{margin-bottom:8px}.intro{padding:20px 17px;border-radius:19px}.setupCard{padding:16px;border-radius:19px}.modeChoices{gap:7px}.mode{padding:12px 9px;min-height:78px}.difficulty{gap:5px}.level{padding:9px 2px}.gamePanel{padding:10px;border-radius:18px}.gameHead{gap:7px}.gameTitle h2{font-size:21px}.gameMeta b{font-size:11px}.gameMeta span{font-size:10px}.playArea{grid-template-columns:1fr}.board{max-width:100%;gap:3px}.cell{font-size:clamp(12px,4.1vw,22px);border-radius:5px}.cell .tag{font-size:7px;top:2px;left:2px}.cell.goalCell .tag{right:2px}.side{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sideCard{padding:11px;border-radius:13px}.sideCard:first-child{grid-column:1/-1}.nextNumber{font-size:28px}.message{min-height:42px;font-size:12px}.sideButtons{grid-template-columns:1fr 1fr;grid-column:1/-1}.sideButtons button{padding:10px 7px;font-size:12px}.gameFoot{align-items:flex-start;flex-direction:column}.startRow{align-items:stretch}.primary{width:100%}.startNote{max-width:none}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+.companionCard{margin-top:14px;padding:18px 20px}.companionCard h2{font-size:17px;margin:0 0 5px}.companionHint{font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.5}.companionChoices{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.companionChoice{min-width:0;border:2px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);padding:8px 5px 7px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px}.companionChoice img{width:100%;max-width:84px;height:88px;object-fit:contain;object-position:center bottom}.companionChoice span{font-size:13px;font-weight:900}.companionChoice.active{border-color:var(--blue);background:var(--blue-soft);box-shadow:0 0 0 2px #356de01a}.companionChoice:focus-visible{outline:3px solid #7da5ff;outline-offset:2px}.companionSelected{font-size:12px;color:var(--muted);margin-top:10px;font-weight:750}@media(max-width:520px){.companionCard{padding:15px 12px}.companionChoices{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.companionChoice img{height:78px}.companionChoice span{font-size:12px}}
 </style>
 </head>
 <body>
@@ -26,6 +27,19 @@
 <section class="panel setupCard"><h2>① 迷路の種類を選ぼう</h2><div class="modeChoices" id="modeChoices"><button class="mode active" data-mode="multiple"><strong>倍数</strong><span>同じ数ずつ増える</span></button><button class="mode" data-mode="factor"><strong>約数</strong><span>小さい順につなぐ</span></button><button class="mode" data-mode="commonMultiple"><strong>公倍数</strong><span>2つの数に共通する倍数</span></button><button class="mode" data-mode="commonFactor"><strong>公約数</strong><span>2つの数に共通する約数</span></button></div><p class="levelInfo">選んだ種類の中で、もとになる数は毎回ランダムに決まります。</p></section>
 <section class="panel setupCard"><h2>② 難しさを選ぼう</h2><div class="difficulty"><button class="level active" data-level="0"><b>レベル1</b><small>やさしい</small></button><button class="level" data-level="1"><b>レベル2</b><small>ふつう</small></button><button class="level" data-level="2"><b>レベル3</b><small>むずかしい</small></button></div><p class="levelInfo" id="levelInfo">5×5マス · 倍数は5個をたどる · まずは順番を確認しよう。</p><div class="startRow"><button class="primary" id="startBtn">迷路をつくる　→</button><span class="startNote">問題は遊ぶたびに変わります。<br>正解ルートは自動でチェックされます。</span></div></section>
 </div>
+<section class="panel companionCard" aria-labelledby="companionTitle">
+<h2 id="companionTitle">③ おともを選ぼう</h2>
+<p class="companionHint">いっしょに迷路に挑戦するナビキャラを選んでね。選んだキャラはこのプレイのおともだよ。</p>
+<div class="companionChoices" id="companionChoices">
+<button class="companionChoice active" type="button" data-companion="riku" aria-pressed="true"><img src="https://tt-sensei.github.io/navi-character-/assets/characters/riku/fullbody/complete.png" alt="りく" loading="lazy"><span>りく</span></button>
+<button class="companionChoice" type="button" data-companion="sora" aria-pressed="false"><img src="https://tt-sensei.github.io/navi-character-/assets/characters/sora/fullbody/complete.png" alt="そら" loading="lazy"><span>そら</span></button>
+<button class="companionChoice" type="button" data-companion="kai" aria-pressed="false"><img src="https://tt-sensei.github.io/navi-character-/assets/characters/kai/fullbody/complete.png" alt="かい" loading="lazy"><span>かい</span></button>
+<button class="companionChoice" type="button" data-companion="saku" aria-pressed="false"><img src="https://tt-sensei.github.io/navi-character-/assets/characters/saku/fullbody/complete.png" alt="さく" loading="lazy"><span>さく</span></button>
+<button class="companionChoice" type="button" data-companion="tsuki" aria-pressed="false"><img src="https://tt-sensei.github.io/navi-character-/assets/characters/tsuki/fullbody/complete.png" alt="つき" loading="lazy"><span>つき</span></button>
+<button class="companionChoice" type="button" data-companion="nami" aria-pressed="false"><img src="https://tt-sensei.github.io/navi-character-/assets/characters/nami/fullbody/complete.png" alt="なみ" loading="lazy"><span>なみ</span></button>
+</div>
+<div class="companionSelected" id="companionSelected">おとも：りく</div>
+</section>
 <div class="panel how"><div class="howItem"><div class="howIcon">1</div><div><b>スタートを見つける</b><span>赤いAと青いBがスタート。紫になったマスは、2つの道が重なったところだよ。</span></div></div><div class="howItem"><div class="howIcon">2</div><div><b>次の数を考える</b><span>順番に来る数を考えて、となりのマスをタップ。</span></div></div><div class="howItem"><div class="howIcon">3</div><div><b>ゴールをめざす</b><span>オレンジのマスがゴール。数のきまりを使って、最後までつなごう。</span></div></div></div>
 </section>
 <section id="gameScreen" class="panel gamePanel hidden">
@@ -45,7 +59,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const levels=[{n:5,range:60,steps:10,multipleTargets:[2,3,4,5,6,8,10],factorTargets:[24,30,36,40,48,60],commonMultiplePairs:[[2,3],[2,5],[3,4],[3,5],[4,5]],commonFactorTargets:[24,30,36,40,48,60],label:'まずは10マス前後の道で、数のきまりをじっくり考えよう。'},{n:7,range:180,steps:16,multipleTargets:[3,4,5,6,7,8,9,10,12],factorTargets:[60,72,84,90,120,180],commonMultiplePairs:[[2,3],[2,5],[3,4],[3,5],[4,5],[4,6],[5,6]],commonFactorTargets:[60,72,84,90,120,180],label:'数の範囲と道のりが長くなるよ。'},{n:9,range:900,steps:24,multipleTargets:[4,5,6,7,8,9,10,12],factorTargets:[240,360,420,480,540,600,720,840],commonMultiplePairs:[[2,3],[2,5],[3,4],[3,5],[4,5],[4,6],[5,6],[6,7]],commonFactorTargets:[240,360,420,480,540,600,720,840],label:'大きな数と長い道のりに挑戦しよう。'}];
-const state={mode:'multiple',target:2,target2:3,level:0,grid:[],sequence:[],route:[],route2:[],sequence2:[],start:0,start2:0,goal:0,current:0,current2:0,progressA:0,progressB:0,visited:[],visitedA:[],visitedB:[],wrong:0,moves:0,startedAt:0,elapsed:0,solved:false};
+const state={mode:'multiple',companion:'riku',target:2,target2:3,level:0,grid:[],sequence:[],route:[],route2:[],sequence2:[],start:0,start2:0,goal:0,current:0,current2:0,progressA:0,progressB:0,visited:[],visitedA:[],visitedB:[],wrong:0,moves:0,startedAt:0,elapsed:0,solved:false};
 const dirs=[[-1,0],[1,0],[0,-1],[0,1]];
 function rand(n){return Math.floor(Math.random()*n)}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -156,6 +170,7 @@ function updateLevelInfo(){const lev=Number(document.querySelector('.level.activ
 
 document.querySelectorAll('.level').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.level').forEach(x=>x.classList.remove('active'));b.classList.add('active');updateLevelInfo()}));
 document.querySelectorAll('.mode').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.mode').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.mode=b.dataset.mode}));
+document.querySelectorAll('.companionChoice').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.companionChoice').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-pressed','false')});b.classList.add('active');b.setAttribute('aria-pressed','true');state.companion=b.dataset.companion;$('companionSelected').textContent='おとも：'+b.querySelector('span').textContent}));
 $('startBtn').addEventListener('click',startGame);
 $('restartBtn').addEventListener('click',startGame);
 $('undoBtn').addEventListener('click',undoStep);
