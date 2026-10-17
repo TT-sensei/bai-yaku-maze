@@ -24,7 +24,7 @@
 <div class="panel intro"><div class="eyebrow">小学5年生向け · 数のきまり</div><h1>数字を順番にたどって、<br>ゴールをめざそう。</h1><p>となり合うマスへ一つずつ進みます。倍数は小さい順、約数も小さい順。正しい数のつながりを考えながら、スタートからゴールまで進もう。出題される倍数・約数は毎回ランダム。ヒントに答えは出ないよ。</p></div>
 <div class="setup">
 <section class="panel setupCard"><h2>① 迷路は毎回ランダム</h2><div class="sideCard" style="background:#f7f9fd"><h3>出題はおまかせ</h3><p style="font-size:13px;line-height:1.7;color:var(--muted);margin:0">倍数・約数と、もとになる数は毎回ランダム。どちらが出るかは、迷路を作ってからのお楽しみ！</p></div></section>
-<section class="panel setupCard"><h2>① 難しさを選ぼう</h2><div class="difficulty"><button class="level active" data-level="0"><b>レベル1</b><small>やさしい</small></button><button class="level" data-level="1"><b>レベル2</b><small>ふつう</small></button><button class="level" data-level="2"><b>レベル3</b><small>むずかしい</small></button><button class="level" data-level="3"><b>レベル4</b><small>達人</small></button></div><p class="levelInfo" id="levelInfo">5×5マス · 数の範囲 1〜30 · まずは順番を確認しよう。</p><div class="startRow"><button class="primary" id="startBtn">迷路をつくる　→</button><span class="startNote">問題は遊ぶたびに変わります。<br>正解ルートは自動でチェックされます。</span></div></section>
+<section class="panel setupCard"><h2>② 難しさを選ぼう</h2><div class="difficulty"><button class="level active" data-level="0"><b>レベル1</b><small>やさしい</small></button><button class="level" data-level="1"><b>レベル2</b><small>ふつう</small></button><button class="level" data-level="2"><b>レベル3</b><small>むずかしい</small></button></div><p class="levelInfo" id="levelInfo">5×5マス · 倍数は5個をたどる · まずは順番を確認しよう。</p><div class="startRow"><button class="primary" id="startBtn">迷路をつくる　→</button><span class="startNote">問題は遊ぶたびに変わります。<br>正解ルートは自動でチェックされます。</span></div></section>
 </div>
 <div class="panel how"><div class="howItem"><div class="howIcon">1</div><div><b>スタートを見つける</b><span>緑のマスがスタート。となり合うマスに進もう。</span></div></div><div class="howItem"><div class="howIcon">2</div><div><b>次の数を考える</b><span>順番に来る数を考えて、となりのマスをタップ。</span></div></div><div class="howItem"><div class="howIcon">3</div><div><b>ゴールをめざす</b><span>オレンジのマスがゴール。数字の順番をつないで進もう。</span></div></div></div>
 </section>
@@ -44,7 +44,7 @@
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
-const levels=[{n:5,range:72,steps:5,label:'まずは順番を確認しよう。'},{n:7,range:84,steps:7,label:'少し広い迷路で、次の数を考えよう。'},{n:9,range:108,steps:9,label:'数の範囲も広がるよ。落ち着いて進もう。'},{n:10,range:120,steps:10,label:'広い迷路に挑戦。順番を見失わずに進もう。'}];
+const levels=[{n:5,range:60,steps:5,multipleTargets:[2,3,4,5,6,8,10],factorTargets:[12,18,20,24,30],label:'まずは短い道で順番を確かめよう。'},{n:7,range:180,steps:10,multipleTargets:[3,4,5,6,7,8,9,10,12],factorTargets:[60,72,84,90,120,180],label:'数の範囲と道のりが長くなるよ。'},{n:9,range:900,steps:16,multipleTargets:[4,5,6,7,8,9,10,12],factorTargets:[240,360,420,480,540,600,720,840],label:'大きな数と長い道のりに挑戦しよう。'}];
 const state={mode:'multiple',target:2,level:0,grid:[],sequence:[],route:[],start:0,goal:0,current:0,visited:[],wrong:0,moves:0,startedAt:0,elapsed:0,solved:false};
 const dirs=[[-1,0],[1,0],[0,-1],[0,1]];
 function rand(n){return Math.floor(Math.random()*n)}
@@ -56,7 +56,7 @@ function makeSequence(){const cfg=levels[state.level];if(state.mode==='factor')r
 function randomPath(n,length){for(let attempt=0;attempt<100;attempt++){const start=rand(n*n),path=[start],seen=new Set(path);function walk(){if(path.length===length)return true;const opts=shuffle(neighbors(path[path.length-1],n).filter(x=>!seen.has(x)));for(const x of opts){seen.add(x);path.push(x);if(walk())return true;path.pop();seen.delete(x)}return false}if(walk())return path.slice()}return null}
 function hasUniqueProgression(grid,seq,route,n){let paths=[route[0]];if(grid[route[0]]!==seq[0])return false;for(let k=1;k<seq.length;k++){const next=[];for(const pos of paths)for(const nb of neighbors(pos,n))if(grid[nb]===seq[k])next.push(nb);if(next.length!==1||next[0]!==route[k])return false;paths=next}return true}
 function createPuzzle(){
- const n=levels[state.level].n,seq=makeSequence(),max=levels[state.level].range;
+ const n=levels[state.level].n,seq=makeSequence(),max=Math.max(levels[state.level].range,Math.ceil(seq[seq.length-1]*1.12));
  if(seq.length>n*n){return false}
  for(let attempt=0;attempt<220;attempt++){
   const route=randomPath(n,seq.length);if(!route)continue;
@@ -95,7 +95,7 @@ function updateStatus(){
  $('nextLabel').textContent=state.solved?'最後まで順番につなげたよ！':(state.mode==='multiple'?'今の数に '+state.target+' を足すと？':'次に来る約数を、小さい順に考えよう。答えは表示しないよ。');
  $('modeLabel').textContent=(state.mode==='multiple'?'倍数の迷路':'約数の迷路')+' · レベル'+(state.level+1);
  $('questionTitle').textContent=state.mode==='multiple'?state.target+'の倍数を小さい順にたどろう':state.target+'の約数を小さい順にたどろう';
- $('boardInfo').textContent=levels[state.level].n+'×'+levels[state.level].n+' · 数の範囲 1〜'+levels[state.level].range;
+ $('boardInfo').textContent=levels[state.level].n+'×'+levels[state.level].n+' · 数の範囲 1〜'+Math.max(levels[state.level].range,Math.ceil(state.sequence[state.sequence.length-1]*1.12));
 }
 function tapCell(i){
  if(state.solved)return;
@@ -113,9 +113,10 @@ function tapCell(i){
 }
 function undoStep(){if(state.solved)return;if(state.visited.length<=1){setMessage('スタートより前には戻れないよ。');return}state.visited.pop();state.current=state.visited[state.visited.length-1];setMessage('一つ前に戻ったよ。次の数を考えてみよう。');renderBoard()}
 function startGame(){
- state.mode=Math.random()<0.5?'multiple':'factor';
- const targets=state.mode==='multiple'?[2,3,4,5,6,7,8,9,10,12]:[12,18,20,24,30,36,40,48,60,72];
- state.target=targets[rand(targets.length)];state.level=Number(document.querySelector('.level.active').dataset.level);
+ state.level=Number(document.querySelector('.level.active').dataset.level);
+ const cfg=levels[state.level];state.mode=Math.random()<0.5?'multiple':'factor';
+ const targets=state.mode==='multiple'?cfg.multipleTargets:cfg.factorTargets;
+ state.target=targets[rand(targets.length)];
  if(!createPuzzle()){setMessage('迷路を作れませんでした。もう一度ためしてね。','bad');return}
  state.current=state.start;state.visited=[state.start];state.wrong=0;state.moves=0;state.solved=false;state.startedAt=Date.now();state.elapsed=0;
  $('setupScreen').classList.add('hidden');$('gameScreen').classList.remove('hidden');$('resultOverlay').classList.add('hidden');
@@ -127,7 +128,7 @@ function showResult(){
  $('resultOverlay').classList.remove('hidden');$('nextBtn').focus()
 }
 function backToSetup(){$('resultOverlay').classList.add('hidden');$('gameScreen').classList.add('hidden');$('setupScreen').classList.remove('hidden');window.scrollTo({top:0,behavior:'instant'})}
-function updateLevelInfo(){const lev=Number(document.querySelector('.level.active').dataset.level),cfg=levels[lev];$('levelInfo').textContent=cfg.n+'×'+cfg.n+'マス · 数の範囲 1〜'+cfg.range+' · '+cfg.label}
+function updateLevelInfo(){const lev=Number(document.querySelector('.level.active').dataset.level),cfg=levels[lev];$('levelInfo').textContent=cfg.n+'×'+cfg.n+'マス · 倍数は'+cfg.steps+'個をたどる · 約数は大きな数から出題 · '+cfg.label}
 
 document.querySelectorAll('.level').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.level').forEach(x=>x.classList.remove('active'));b.classList.add('active');updateLevelInfo()}));
 $('startBtn').addEventListener('click',startGame);
