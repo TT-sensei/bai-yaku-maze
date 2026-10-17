@@ -34,7 +34,7 @@
 <div class="playArea"><div class="boardWrap"><div id="board" class="board" role="group" aria-label="数字の迷路"></div></div><aside class="side">
 <div class="sideCard"><h3>次に来る数</h3><div class="nextNumber" id="nextNumber">4</div><div class="nextLabel" id="nextLabel">2の倍数を小さい順にたどろう。</div></div>
 <div class="sideCard"><h3>メッセージ</h3><div id="message" class="message" aria-live="polite">緑のスタートから始めよう。</div></div>
-<div class="sideButtons"><button id="restartBtn" class="secondary">この迷路をやり直す</button><button id="changeBtn" class="secondary">設定を変える</button></div>
+<div class="sideButtons"><button id="undoBtn" class="secondary">一つ戻る</button><button id="restartBtn" class="secondary">この迷路をやり直す</button><button id="changeBtn" class="secondary">設定を変える</button></div>
 </aside></div>
 <div class="gameFoot"><div class="legend"><span><i class="dot start"></i>スタート</span><span><i class="dot visited"></i>通ったマス</span><span><i class="dot goal"></i>ゴール</span></div><span>上下左右だけ進めます。斜めには進めません。</span></div>
 </section>
@@ -54,7 +54,7 @@ function neighbors(i,n){const r=Math.floor(i/n),c=i%n,out=[];if(r>0)out.push(i-n
 function factorSequence(num){const a=[];for(let i=1;i<=num;i++)if(num%i===0)a.push(i);return a}
 function makeSequence(){const cfg=levels[state.level];if(state.mode==='factor')return factorSequence(state.target);return Array.from({length:cfg.steps},(_,i)=>(i+1)*state.target)}
 function randomPath(n,length){for(let attempt=0;attempt<100;attempt++){const start=rand(n*n),path=[start],seen=new Set(path);function walk(){if(path.length===length)return true;const opts=shuffle(neighbors(path[path.length-1],n).filter(x=>!seen.has(x)));for(const x of opts){seen.add(x);path.push(x);if(walk())return true;path.pop();seen.delete(x)}return false}if(walk())return path.slice()}return null}
-function countSolutions(grid,seq,start,goal,n){let count=0;function walk(pos,k,seen){if(count>1)return;if(k===seq.length-1){if(pos===goal)count++;return}for(const nb of neighbors(pos,n)){if(seen.has(nb)||grid[nb]!==seq[k+1])continue;seen.add(nb);walk(nb,k+1,seen);seen.delete(nb);if(count>1)return}}if(grid[start]===seq[0])walk(start,0,new Set([start]));return count}
+function hasUniqueProgression(grid,seq,route,n){let paths=[route[0]];if(grid[route[0]]!==seq[0])return false;for(let k=1;k<seq.length;k++){const next=[];for(const pos of paths)for(const nb of neighbors(pos,n))if(grid[nb]===seq[k])next.push(nb);if(next.length!==1||next[0]!==route[k])return false;paths=next}return true}
 function createPuzzle(){
  const n=levels[state.level].n,seq=makeSequence(),max=levels[state.level].range;
  if(seq.length>n*n){return false}
@@ -62,7 +62,7 @@ function createPuzzle(){
   const route=randomPath(n,seq.length);if(!route)continue;
   const grid=Array(n*n);for(let i=0;i<grid.length;i++)grid[i]=1+rand(max);
   route.forEach((cell,k)=>grid[cell]=seq[k]);
-  if(countSolutions(grid,seq,route[0],route[route.length-1],n)===1){state.grid=grid;state.sequence=seq;state.route=route;state.start=route[0];state.goal=route[route.length-1];return true}
+  if(hasUniqueProgression(grid,seq,route,n) ){state.grid=grid;state.sequence=seq;state.route=route;state.start=route[0];state.goal=route[route.length-1];return true}
  }
  // Safe fallback: route values are unique to the route; no distractor can imitate a required step.
  const route=randomPath(n,seq.length);if(!route)return false;
@@ -111,6 +111,7 @@ function tapCell(i){
  else if(i===state.goal){state.wrong++;setMessage('ゴールに着いたけれど、順番がまだ続くよ。','bad');renderBoard();return}
  renderBoard()
 }
+function undoStep(){if(state.solved)return;if(state.visited.length<=1){setMessage('スタートより前には戻れないよ。');return}state.visited.pop();state.current=state.visited[state.visited.length-1];setMessage('一つ前に戻ったよ。次の数を考えてみよう。');renderBoard()}
 function startGame(){
  state.target=Number($('targetSelect').value);state.level=Number(document.querySelector('.level.active').dataset.level);
  if(!createPuzzle()){setMessage('迷路を作れませんでした。もう一度ためしてね。','bad');return}
@@ -135,6 +136,7 @@ document.querySelectorAll('.mode').forEach(b=>b.addEventListener('click',()=>{do
 document.querySelectorAll('.level').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.level').forEach(x=>x.classList.remove('active'));b.classList.add('active');updateLevelInfo()}));
 $('startBtn').addEventListener('click',startGame);
 $('restartBtn').addEventListener('click',startGame);
+$('undoBtn').addEventListener('click',undoStep);
 $('changeBtn').addEventListener('click',backToSetup);
 $('homeTop').addEventListener('click',backToSetup);
 $('nextBtn').addEventListener('click',startGame);
