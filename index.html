@@ -46,7 +46,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const levels=[{n:5,range:60,steps:10,multipleTargets:[2,3,4,5,6,8,10],factorTargets:[24,30,36,40,48,60],commonMultiplePairs:[[2,3],[2,5],[3,4],[3,5],[4,5]],commonFactorTargets:[24,30,36,40,48,60],label:'まずは10マス前後の道で、数のきまりをじっくり考えよう。'},{n:7,range:180,steps:16,multipleTargets:[3,4,5,6,7,8,9,10,12],factorTargets:[60,72,84,90,120,180],commonMultiplePairs:[[2,3],[2,5],[3,4],[3,5],[4,5],[4,6],[5,6]],commonFactorTargets:[60,72,84,90,120,180],label:'数の範囲と道のりが長くなるよ。'},{n:9,range:900,steps:24,multipleTargets:[4,5,6,7,8,9,10,12],factorTargets:[240,360,420,480,540,600,720,840],commonMultiplePairs:[[2,3],[2,5],[3,4],[3,5],[4,5],[4,6],[5,6],[6,7]],commonFactorTargets:[240,360,420,480,540,600,720,840],label:'大きな数と長い道のりに挑戦しよう。'}];
-const state={mode:'multiple',target:2,target2:3,level:0,grid:[],sequence:[],route:[],route2:[],sequence2:[],start:0,start2:0,goal:0,current:0,current2:0,progressA:0,progressB:0,visited:[],visitedA:[],visitedB:[],wrong:0,moves:0,startedAt:0,elapsed:0,solved:false};
+const state={mode:'multiple',target:2,target2:3,level:0,grid:[],sequence:[],route:[],route2:[],sequence2:[],start:0,start2:0,goal:0,current:0,current2:0,progressA:0,progressB:0,visited:[],visitedA:[],visitedB:[],historyCommon:[],wrong:0,moves:0,startedAt:0,elapsed:0,solved:false};
 const dirs=[[-1,0],[1,0],[0,-1],[0,1]];
 function rand(n){return Math.floor(Math.random()*n)}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -119,11 +119,12 @@ function tapCell(i){
    const meetValue=state.mode==='commonMultiple'?lcm(state.target,state.target2):gcd(state.target,state.target2);
    const meetA=state.sequence.indexOf(meetValue),meetB=state.sequence2.indexOf(meetValue);
    const bothMet=state.progressA>=meetA&&state.progressB>=meetB;
-   let advanced=false;
+   let advanced=false,advancedA=false,advancedB=false;
    const nextA=state.route[state.progressA+1],nextB=state.route2[state.progressB+1];
-   if(nextA===i&&(bothMet||state.progressA<meetA)){state.progressA++;state.current=i;state.visitedA.push(i);advanced=true}
-   if(nextB===i&&(bothMet||state.progressB<meetB)){state.progressB++;state.current2=i;state.visitedB.push(i);advanced=true}
+   if(nextA===i&&(bothMet||state.progressA<meetA)){state.progressA++;state.current=i;state.visitedA.push(i);advanced=true;advancedA=true}
+   if(nextB===i&&(bothMet||state.progressB<meetB)){state.progressB++;state.current2=i;state.visitedB.push(i);advanced=true;advancedB=true}
    if(!advanced){state.wrong++;setMessage('まずAとBの道を、それぞれ合流するマスまで進めよう。','bad');renderBoard();return}
+   state.historyCommon.push({a:advancedA,b:advancedB});
    state.moves++;
    const doneA=state.progressA===state.route.length-1,doneB=state.progressB===state.route2.length-1;
    if(doneA&&doneB){state.solved=true;state.elapsed=Math.max(1,Math.round((Date.now()-state.startedAt)/1000));setMessage('2つの道がつながったよ！','good');renderBoard();setTimeout(showResult,180);return}
@@ -136,7 +137,20 @@ function tapCell(i){
  state.current=i;state.visited.push(i);state.moves++;setMessage('正解！ 次の数を考えて進もう。','good');
  if(i===state.goal&&state.visited.length===state.sequence.length){state.solved=true;state.elapsed=Math.max(1,Math.round((Date.now()-state.startedAt)/1000));renderBoard();setTimeout(showResult,180)}else if(i===state.goal){state.wrong++;setMessage('ゴールに着いたけれど、順番がまだ続くよ。','bad');renderBoard();return}renderBoard()
 }
-function undoStep(){if(state.solved)return;if(state.mode==='commonMultiple'||state.mode==='commonFactor'){if(state.progressA===0&&state.progressB===0){setMessage('スタートより前には戻れないよ。');return}if(state.progressA>=state.progressB&&state.progressA>0){state.progressA--;state.visitedA.pop();state.moves=Math.max(0,state.moves-1);state.current=state.route[state.progressA]}else if(state.progressB>0){state.progressB--;state.visitedB.pop();state.moves=Math.max(0,state.moves-1);state.current2=state.route2[state.progressB]}setMessage('一つ戻ったよ。AとBの次の数を考えよう。');renderBoard();return}if(state.visited.length<=1){setMessage('スタートより前には戻れないよ。');return}state.visited.pop();state.moves=Math.max(0,state.moves-1);state.current=state.visited[state.visited.length-1];setMessage('一つ前に戻ったよ。次の数を考えてみよう。');renderBoard()}
+function undoStep(){
+ if(state.solved)return;
+ if(state.mode==='commonMultiple'||state.mode==='commonFactor'){
+  const last=state.historyCommon.pop();
+  if(!last){setMessage('スタートより前には戻れないよ。');return}
+  if(last.a){state.progressA--;state.visitedA.pop();state.current=state.route[state.progressA]}
+  if(last.b){state.progressB--;state.visitedB.pop();state.current2=state.route2[state.progressB]}
+  state.moves=Math.max(0,state.moves-1);
+  setMessage(last.a&&last.b?'共通の道を一つ戻ったよ。AとBの次の数を考えよう。':'一つ戻ったよ。AとBの次の数を考えよう。');
+  renderBoard();return
+ }
+ if(state.visited.length<=1){setMessage('スタートより前には戻れないよ。');return}
+ state.visited.pop();state.moves=Math.max(0,state.moves-1);state.current=state.visited[state.visited.length-1];setMessage('一つ前に戻ったよ。次の数を考えてみよう。');renderBoard()
+}
 function chooseHintCharacter(){const characters=[['riku','りく'],['sora','そら'],['kai','かい'],['saku','さく'],['tsuki','つき'],['nami','なみ']];const chosen=characters[Math.floor(Math.random()*characters.length)];$('hintCharacter').src='https://tt-sensei.github.io/navi-character-/assets/web/characters/'+chosen[0]+'/fullbody/hint.webp';$('hintCharacter').alt=chosen[1]+'（ヒント）'}
 function startGame(){
 chooseHintCharacter();
@@ -145,7 +159,7 @@ chooseHintCharacter();
  const targets=state.mode==='multiple'?cfg.multipleTargets:state.mode==='factor'?cfg.factorTargets:state.mode==='commonMultiple'?null:cfg.commonFactorTargets;
  if(state.mode==='commonMultiple'){const pairs=cfg.commonMultiplePairs.filter(p=>p[0]*p[1]===lcm(p[0],p[1]));const pair=pairs[rand(pairs.length)];state.target=pair[0];state.target2=pair[1]}else if(state.mode==='commonFactor'){const pairs=state.level===0?[[24,36],[30,60],[40,60]]:state.level===1?[[60,72],[60,90],[72,120]]:[[240,360],[360,540],[420,840]];const pair=pairs[rand(pairs.length)];state.target=pair[0];state.target2=pair[1]}else{state.target=targets[rand(targets.length)]}
  if(!createPuzzle()){setMessage('迷路を作れませんでした。もう一度ためしてね。','bad');return}
- state.current=state.start;state.current2=state.start2;state.visited=[state.start];state.visitedA=[state.start];state.visitedB=state.start2===null?[]:[state.start2];state.progressA=0;state.progressB=0;if(state.mode==='commonMultiple'||state.mode==='commonFactor'){state.visited=[]}state.wrong=0;state.moves=0;state.solved=false;state.startedAt=Date.now();state.elapsed=0;
+ state.current=state.start;state.current2=state.start2;state.visited=[state.start];state.visitedA=[state.start];state.visitedB=state.start2===null?[]:[state.start2];state.progressA=0;state.progressB=0;state.historyCommon=[];if(state.mode==='commonMultiple'||state.mode==='commonFactor'){state.visited=[]}state.wrong=0;state.moves=0;state.solved=false;state.startedAt=Date.now();state.elapsed=0;
  $('setupScreen').classList.add('hidden');$('gameScreen').classList.remove('hidden');$('resultOverlay').classList.add('hidden');
  setMessage('スタートから始めよう。次の数は何かな？');renderBoard();window.scrollTo({top:0,behavior:'instant'})
 }
