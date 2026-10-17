@@ -112,15 +112,15 @@ function updateStatus(){
 function tapCell(i){
  if(state.solved)return;
  const common=state.mode==='commonMultiple'||state.mode==='commonFactor',n=levels[state.level].n;
- if(common){let advanced=false;const nextA=state.route[state.progressA+1],nextB=state.route2[state.progressB+1];if(nextA===i){state.progressA++;state.current=i;state.visitedA.push(i);advanced=true}if(nextB===i){state.progressB++;state.current2=i;state.visitedB.push(i);advanced=true}if(!advanced){state.wrong++;setMessage('AかBのスタートから、次の数につながるマスを探そう。','bad');renderBoard();return}const doneA=state.progressA===state.route.length-1,doneB=state.progressB===state.route2.length-1;if(doneA&&doneB){state.solved=true;state.elapsed=Math.max(1,Math.round((Date.now()-state.startedAt)/1000));setMessage('2つの道がつながったよ！','good');renderBoard();setTimeout(showResult,180);return}setMessage('いいね！ AとB、それぞれの次の数を考えよう。','good');renderBoard();return}
+ if(common){let advanced=false;const nextA=state.route[state.progressA+1],nextB=state.route2[state.progressB+1];if(nextA===i){state.progressA++;state.current=i;state.visitedA.push(i);advanced=true}if(nextB===i){state.progressB++;state.current2=i;state.visitedB.push(i);advanced=true}if(!advanced){state.wrong++;setMessage('AかBのスタートから、次の数につながるマスを探そう。','bad');renderBoard();return}state.moves++;const doneA=state.progressA===state.route.length-1,doneB=state.progressB===state.route2.length-1;if(doneA&&doneB){state.solved=true;state.elapsed=Math.max(1,Math.round((Date.now()-state.startedAt)/1000));setMessage('2つの道がつながったよ！','good');renderBoard();setTimeout(showResult,180);return}setMessage('いいね！ AとB、それぞれの次の数を考えよう。','good');renderBoard();return}
  if(i===state.current){setMessage('今いるマスだよ。上下左右のとなりを見てみよう。');return}
  if(!neighbors(state.current,n).includes(i)){setMessage('一度に進めるのは、上下左右のとなりのマスだけだよ。','bad');state.wrong++;return}
  const k=state.visited.length,expected=state.sequence[k];if(k>=state.sequence.length)return;
  if(state.grid[i]!==expected){state.wrong++;setMessage('次に来る数とちがうみたい。'+(state.mode==='multiple'?' '+state.target+'ずつ増える順番を考えよう。':'約数を小さい順に思い出そう。'),'bad');return}
- state.current=i;state.visited.push(i);setMessage('正解！ 次の数を考えて進もう。','good');
+ state.current=i;state.visited.push(i);state.moves++;setMessage('正解！ 次の数を考えて進もう。','good');
  if(i===state.goal&&state.visited.length===state.sequence.length){state.solved=true;state.elapsed=Math.max(1,Math.round((Date.now()-state.startedAt)/1000));renderBoard();setTimeout(showResult,180)}else if(i===state.goal){state.wrong++;setMessage('ゴールに着いたけれど、順番がまだ続くよ。','bad');renderBoard();return}renderBoard()
 }
-function undoStep(){if(state.solved)return;if(state.mode==='commonMultiple'||state.mode==='commonFactor'){if(state.progressA===0&&state.progressB===0){setMessage('スタートより前には戻れないよ。');return}if(state.progressA>=state.progressB&&state.progressA>0){state.progressA--;state.visitedA.pop();state.current=state.route[state.progressA]}else if(state.progressB>0){state.progressB--;state.visitedB.pop();state.current2=state.route2[state.progressB]}setMessage('一つ戻ったよ。AとBの次の数を考えよう。');renderBoard();return}if(state.visited.length<=1){setMessage('スタートより前には戻れないよ。');return}state.visited.pop();state.current=state.visited[state.visited.length-1];setMessage('一つ前に戻ったよ。次の数を考えてみよう。');renderBoard()}
+function undoStep(){if(state.solved)return;if(state.mode==='commonMultiple'||state.mode==='commonFactor'){if(state.progressA===0&&state.progressB===0){setMessage('スタートより前には戻れないよ。');return}if(state.progressA>=state.progressB&&state.progressA>0){state.progressA--;state.visitedA.pop();state.moves=Math.max(0,state.moves-1);state.current=state.route[state.progressA]}else if(state.progressB>0){state.progressB--;state.visitedB.pop();state.moves=Math.max(0,state.moves-1);state.current2=state.route2[state.progressB]}setMessage('一つ戻ったよ。AとBの次の数を考えよう。');renderBoard();return}if(state.visited.length<=1){setMessage('スタートより前には戻れないよ。');return}state.visited.pop();state.moves=Math.max(0,state.moves-1);state.current=state.visited[state.visited.length-1];setMessage('一つ前に戻ったよ。次の数を考えてみよう。');renderBoard()}
 function startGame(){
  state.level=Number(document.querySelector('.level.active').dataset.level);
  const cfg=levels[state.level];
@@ -132,7 +132,7 @@ function startGame(){
  setMessage('スタートから始めよう。次の数は何かな？');renderBoard();window.scrollTo({top:0,behavior:'instant'})
 }
 function showResult(){
- $('resultMoves').textContent=state.visited.length-1;$('resultWrong').textContent=state.wrong;$('resultTime').textContent=state.elapsed+'秒';
+ $('resultMoves').textContent=(state.mode==='commonMultiple'||state.mode==='commonFactor')?state.moves:state.visited.length-1;$('resultWrong').textContent=state.wrong;$('resultTime').textContent=state.elapsed+'秒';
  $('resultText').textContent=state.mode==='multiple'?state.target+'の倍数を小さい順につなげて、ゴールできたね！':state.mode==='factor'?state.target+'の約数を小さい順につなげて、ゴールできたね！':state.target+'と'+state.target2+'の'+(state.mode==='commonMultiple'?'公倍数':'公約数')+'を小さい順につなげて、ゴールできたね！';
  $('resultOverlay').classList.remove('hidden');$('nextBtn').focus()
 }
