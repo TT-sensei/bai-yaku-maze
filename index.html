@@ -44,7 +44,7 @@
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
-const levels=[{n:5,range:30,steps:5,label:'まずは順番を確認しよう。'},{n:7,range:60,steps:7,label:'少し広い迷路で、次の数を考えよう。'},{n:9,range:100,steps:9,label:'数の範囲も広がるよ。落ち着いて進もう。'},{n:10,range:120,steps:10,label:'広い迷路に挑戦。順番を見失わずに進もう。'}];
+const levels=[{n:5,range:72,steps:5,label:'まずは順番を確認しよう。'},{n:7,range:84,steps:7,label:'少し広い迷路で、次の数を考えよう。'},{n:9,range:108,steps:9,label:'数の範囲も広がるよ。落ち着いて進もう。'},{n:10,range:120,steps:10,label:'広い迷路に挑戦。順番を見失わずに進もう。'}];
 const state={mode:'multiple',target:2,level:0,grid:[],sequence:[],route:[],start:0,goal:0,current:0,visited:[],wrong:0,moves:0,startedAt:0,elapsed:0,solved:false};
 const dirs=[[-1,0],[1,0],[0,-1],[0,1]];
 function rand(n){return Math.floor(Math.random()*n)}
